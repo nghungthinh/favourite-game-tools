@@ -1,10 +1,26 @@
 # favourite-game-tools
-# Creating the README.md file with the generated content
 
-readme_content = """
-# **Selenium Account Registration Tool**
+# **Selenium Account Registration Tool for JX2VN**
 
-This project automates the process of account registration using Selenium WebDriver. It supports both dynamic (auto-generated) and manual username generation, multi-threading, and logs the results to a CSV file.
+This project automates the process of account registration using Selenium WebDriver.
+
+---
+
+### **Examples**
+
+#### **1. Auto Mode**
+Automatically generate usernames with a base name and count:
+```bash
+python main.py --mode=auto --base_username=username --count=15 --threads=3 --phone=012345678912 --password=123456
+```
+- This will create 15 usernames (`nghungthinh1` to `nghungthinh15`), divide them among 3 threads, and register accounts using the specified phone and password.
+
+#### **2. Manual Mode**
+Register specific usernames manually:
+```bash
+python main.py --mode=manual --manual_usernames user1 user2 user3 --threads=1 --phone=012345678912 --password=123456
+```
+- This will register the usernames `user1`, `user2`, and `user3` sequentially using 1 thread.
 
 ---
 
