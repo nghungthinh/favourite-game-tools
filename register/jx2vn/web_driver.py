@@ -1,5 +1,6 @@
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.chrome.options import Options
 
@@ -21,7 +22,8 @@ class WebDriver:
         self.driver.get("https://jx2vn.com/api/dang-ky")
         try:
             # Username
-            username_field = self.driver.find_element(By.XPATH, "/html/body/main/div/div/div/div/div/form/div[1]/div[1]/input")
+            username_field = WebDriverWait(self.driver, 20).until(
+                                                    EC.presence_of_element_located((By.XPATH, "/html/body/main/div/div/div/div/div/form/div[1]/div[1]/input")))
             username_field.send_keys(username)
 
             # Password 1
@@ -50,8 +52,8 @@ class WebDriver:
             # return check_message
 
         except Exception as e:
-            return f"An error occurred: {e}"
-        
+            self.driver.save_screenshot(f"error_{username}.png")  # Save screenshot for debugging
+            raise e        
     def checkIsExist(self, username):
         # Login
         # pass
@@ -71,7 +73,7 @@ class WebDriver:
                 lambda d: d.find_element(By.XPATH, "/html/body/header/nav/div[2]/div/div[2]/div/span"))
             username = username_field.text
 
-            if username == userName:
+            if username != userName:
                 return "Failed"
             else:
                 return "Success"

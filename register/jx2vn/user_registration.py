@@ -17,32 +17,45 @@ def append_to_csv(file_name, row):
         writer = csv.writer(file)
         writer.writerow(row)
 
-def generate_usernames(base_username, count):
-    return [f"{base_username}{i}" for i in range(count)]
+def generate_usernames(base_username, count=None, mode="auto", manual_usernames=None):
+    if mode == "auto":
+        if count is None:
+            raise ValueError("Count must be provided in 'auto' mode.")
+        return [f"{base_username}{i}" for i in range(1, count + 1)]
+    elif mode == "manual":
+        if not manual_usernames:
+            raise ValueError("Manual usernames must be provided in 'manual' mode.")
+        return manual_usernames
+    else:
+        raise ValueError("Invalid mode. Use 'auto' or 'manual'.")
 
-def register_worker(base_username, password, phone, count):
+def register_worker(usernames, password, phone, count):
     global shared_variable
-    usernames = generate_usernames(base_username, count)
 
     for username in usernames:
-        with mutex:  # Thread-safe shared resource update
+        with mutex:
             shared_variable += 1
 
         driver = WebDriver()
-        try:
-            # Register account
-            driver.register_account(username, password, phone)
+        max_retries = 3
+        attempt = 0
+        while attempt < max_retries:
+            try:
+                # Register account
+                driver.register_account(username, password, phone)
 
-            if driver.checkIsExist(username):
-                status = "Account is exist"
-            else:
-                status = driver.getUsernameAfterRegister(username)
-            
-            print(f"Account: {username}, Result: {status}")
-            append_to_csv("output.csv", [username, password, password, phone, status])
-        except Exception as e:
-            # Xử lý lỗi trong quá trình đăng ký (timeout hoặc lỗi khác)
-            print(f"Account: {username}, Error during registration: {str(e)}")
-            append_to_csv("output.csv", [username, password, password, phone, "Failed"])
-        finally:
-            driver.quit()
+                if driver.checkIsExist(username):
+                    status = "Account is exist"
+                else:
+                    status = driver.getUsernameAfterRegister(username)
+
+                print(f"Account: {username}, Result: {status}")
+                append_to_csv("output.csv", [username, password, password, phone, status])
+                break  # Exit loop if successful
+            except Exception as e:
+                attempt += 1
+                if attempt >= max_retries:
+                    print(f"Account: {username}, Error after {attempt} retries: {str(e)}")
+                    append_to_csv("output.csv", [username, password, password, phone, "Failed"])
+            finally:
+                driver.quit()
